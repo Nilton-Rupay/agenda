@@ -103,6 +103,11 @@
             color: #fff;
         }
 
+        .btn-admin {
+            background: linear-gradient(135deg, #a855f7, #7c3aed);
+            color: #fff;
+        }
+
         /* Alertas */
         .alert-banner {
             background: linear-gradient(90deg, #ff6b6b, #ee5a24);
@@ -196,6 +201,7 @@
         .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(0,212,255,0.3); }
         .btn-primary:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
         .btn-danger { background: linear-gradient(135deg, #ff6b6b, #ee5a24); color: #fff; margin-top: 10px; }
+        .btn-success { background: linear-gradient(135deg, #22c55e, #16a34a); color: #fff; }
 
         .category-selector { display: flex; gap: 6px; margin-bottom: 12px; flex-wrap: wrap; }
         .cat-btn {
@@ -335,6 +341,9 @@
         .badge.instituto { background: rgba(168,85,247,0.2); color: #a855f7; }
         .badge.compras { background: rgba(251,191,36,0.2); color: #fbbf24; }
         .badge.alert { background: rgba(255,107,107,0.2); color: #ff6b6b; animation: blink 1.5s infinite; }
+        .badge.pending { background: rgba(251,191,36,0.25); color: #fbbf24; }
+        .badge.approved { background: rgba(34,197,94,0.25); color: #4ade80; }
+        .badge.rejected { background: rgba(255,107,107,0.25); color: #ff6b6b; }
 
         @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
 
@@ -376,6 +385,7 @@
             max-height: 90vh;
             overflow-y: auto;
         }
+        .modal.admin-modal { max-width: 700px; }
         .modal h2 { margin-bottom: 15px; font-size: clamp(1.2rem, 3vw, 1.5em); }
         .close-modal { float: right; background: none; border: none; color: #fff; font-size: 1.5em; cursor: pointer; line-height: 1; }
         .day-detail-events { margin-top: 10px; }
@@ -389,6 +399,31 @@
         .time-input { display: flex; gap: 8px; }
         .time-input input { flex: 1; }
 
+        /* Admin panel */
+        .admin-user-card {
+            background: rgba(0,0,0,0.25);
+            border-radius: 12px;
+            padding: 14px;
+            margin-bottom: 12px;
+            border-left: 4px solid #a855f7;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+        .admin-user-info { flex: 1; min-width: 180px; }
+        .admin-user-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+        .admin-user-actions .btn-small { min-width: 90px; }
+
+        .pending-message {
+            text-align: center;
+            padding: 20px 10px;
+        }
+        .pending-message .icon { font-size: 3rem; margin-bottom: 12px; }
+        .pending-message h2 { margin-bottom: 10px; color: #fbbf24; }
+        .pending-message p { color: #aaa; line-height: 1.5; }
+
         @media (max-width: 400px) {
             body { padding: 8px; }
             .calendar-wrapper { padding: 10px; }
@@ -400,31 +435,43 @@
 </head>
 <body>
     <div class="auth-gate" id="authGate">
-        <form class="auth-card" id="emailAuthForm">
-            <h2 id="authTitle">🔐 Ingresar a Mi Agenda</h2>
-            <p id="authDescription">Usa tu correo y contraseña para acceder a tus eventos.</p>
+        <div class="auth-card" id="authCard">
+            <!-- Formulario de login / registro -->
+            <form id="emailAuthForm">
+                <h2 id="authTitle">🔐 Ingresar a Mi Agenda</h2>
+                <p id="authDescription">Usa tu correo y contraseña para acceder a tus eventos.</p>
 
-            <div class="form-group">
-                <label for="authEmail">Correo electrónico</label>
-                <input type="email" id="authEmail" autocomplete="email" required placeholder="tu@correo.com">
-            </div>
-
-            <div class="form-group">
-                <label for="authPassword">Contraseña</label>
-                <div class="password-field">
-                    <input type="password" id="authPassword" autocomplete="current-password" minlength="6" required placeholder="Mínimo 6 caracteres">
-                    <button class="toggle-password" type="button" id="togglePassword" aria-label="Mostrar contraseña">👁</button>
+                <div class="form-group">
+                    <label for="authEmail">Correo electrónico</label>
+                    <input type="email" id="authEmail" autocomplete="email" required placeholder="tu@correo.com">
                 </div>
-            </div>
 
-            <button class="btn btn-primary" type="submit" id="emailAuthButton">Ingresar</button>
-            <p class="auth-error" id="authError" role="alert"></p>
-            <p class="auth-switch" id="authSwitchText">¿No tienes una cuenta? <button type="button" id="authSwitch">Crear cuenta</button></p>
+                <div class="form-group">
+                    <label for="authPassword">Contraseña</label>
+                    <div class="password-field">
+                        <input type="password" id="authPassword" autocomplete="current-password" minlength="6" required placeholder="Mínimo 6 caracteres">
+                        <button class="toggle-password" type="button" id="togglePassword" aria-label="Mostrar contraseña">👁</button>
+                    </div>
+                </div>
 
-            <div style="display: flex; gap: 8px; margin-top: 18px;">
-                <button class="btn-small btn-google" type="button" onclick="loginGoogle()">🔴 Google</button>
+                <button class="btn btn-primary" type="submit" id="emailAuthButton">Ingresar</button>
+                <p class="auth-error" id="authError" role="alert"></p>
+                <p class="auth-switch" id="authSwitchText">¿No tienes una cuenta? <button type="button" id="authSwitch">Crear cuenta</button></p>
+
+                <div style="display: flex; gap: 8px; margin-top: 18px;">
+                    <button class="btn-small btn-google" type="button" onclick="loginGoogle()">🔴 Google</button>
+                </div>
+            </form>
+
+            <!-- Mensaje de pendiente de aprobación -->
+            <div id="pendingMessage" class="pending-message" style="display: none;">
+                <div class="icon">⏳</div>
+                <h2>Solicitud pendiente</h2>
+                <p>Tu cuenta está esperando la aprobación del administrador.<br>
+                   Cuando te aprueben podrás usar la agenda normalmente.</p>
+                <button class="btn btn-danger" style="margin-top: 20px;" onclick="logout()">Cerrar sesión</button>
             </div>
-        </form>
+        </div>
     </div>
 
     <div class="container">
@@ -437,6 +484,7 @@
                 🔴 Sin conexión - Conectando...
             </div>
             <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                <button class="btn-small btn-admin" id="btnAdminPanel" style="display: none;" onclick="openAdminPanel()">👑 Admin</button>
                 <button class="btn-small btn-logout" onclick="logout()">Cerrar sesión</button>
             </div>
         </div>
@@ -551,13 +599,25 @@
         </div>
     </div>
 
+    <!-- Modal Admin -->
+    <div class="modal-overlay" id="adminModal" onclick="closeAdminModal(event)">
+        <div class="modal admin-modal" onclick="event.stopPropagation()">
+            <button class="close-modal" onclick="closeAdminModal()">×</button>
+            <h2>👑 Panel de Administración</h2>
+            <p style="color:#aaa; margin-bottom: 15px;">Usuarios pendientes de aprobación</p>
+            <div id="adminUsersList">
+                <div class="empty-state">Cargando usuarios...</div>
+            </div>
+        </div>
+    </div>
+
     <script type="module">
         // ═══════════════════════════════════════════════════════
-        // FIREBASE SDK - CONFIGURACIÓN REAL DE TU PROYECTO
+        // FIREBASE SDK
         // ═══════════════════════════════════════════════════════
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
         import { getAuth, onAuthStateChanged, GoogleAuthProvider, signInWithPopup, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-        import { getFirestore, collection, addDoc, deleteDoc, doc, onSnapshot, query, orderBy, enableIndexedDbPersistence } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, deleteDoc, doc, onSnapshot, query, orderBy, enableIndexedDbPersistence, getDoc, setDoc, updateDoc, getDocs, where } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyDLEE50aALnu-rF_aaG92JM3UyOuATeM9k",
@@ -573,7 +633,6 @@
         const auth = getAuth(app);
         const db = getFirestore(app);
 
-        // Persistencia offline (funciona sin internet)
         try {
             enableIndexedDbPersistence(db);
         } catch (e) {
@@ -581,10 +640,11 @@
         }
 
         // ═══════════════════════════════════════════════════════
-        // LÓGICA DE LA APLICACIÓN
+        // ESTADO DE LA APLICACIÓN
         // ═══════════════════════════════════════════════════════
         let events = [];
         let currentUser = null;
+        let currentUserData = null;   // datos del documento users/{uid}
         let unsubscribe = null;
         let currentMonth = 7;
         let currentYear = 2026;
@@ -663,28 +723,91 @@
             password.type = password.type === 'password' ? 'text' : 'password';
         });
 
-        onAuthStateChanged(auth, (user) => {
+        // ─── LÓGICA PRINCIPAL DE AUTH + APROBACIÓN ───
+        onAuthStateChanged(auth, async (user) => {
             const statusEl = document.getElementById('authStatus');
-            if (user) {
-                currentUser = user;
-                document.getElementById('authGate').classList.add('hidden');
-                statusEl.innerHTML = `🟢 Conectado: <strong>${user.displayName || 'Usuario'}</strong>`;
-                statusEl.className = 'auth-status connected';
-                loadEventsFromFirestore();
-            } else {
+            const authGate = document.getElementById('authGate');
+            const emailForm = document.getElementById('emailAuthForm');
+            const pendingMsg = document.getElementById('pendingMessage');
+            const btnAdmin = document.getElementById('btnAdminPanel');
+
+            if (!user) {
                 currentUser = null;
-                document.getElementById('authGate').classList.remove('hidden');
+                currentUserData = null;
+                authGate.classList.remove('hidden');
+                emailForm.style.display = 'block';
+                pendingMsg.style.display = 'none';
                 statusEl.innerHTML = `🟡 No conectado. Elige un método de acceso.`;
                 statusEl.className = 'auth-status offline';
+                btnAdmin.style.display = 'none';
                 events = [];
                 if (unsubscribe) { unsubscribe(); unsubscribe = null; }
                 renderCalendar();
                 renderEvents();
                 updateStats();
+                return;
             }
+
+            // Usuario autenticado → verificar / crear documento de usuario
+            const userRef = doc(db, 'users', user.uid);
+            let userSnap = await getDoc(userRef);
+
+            if (!userSnap.exists()) {
+                // Primera vez → crear documento en estado pending
+                await setDoc(userRef, {
+                    email: user.email || '',
+                    displayName: user.displayName || 'Usuario',
+                    status: 'pending',
+                    role: 'user',
+                    createdAt: new Date().toISOString()
+                });
+                userSnap = await getDoc(userRef);
+            }
+
+            currentUserData = userSnap.data();
+            currentUser = user;
+
+            // === ESTADO: PENDING ===
+            if (currentUserData.status === 'pending') {
+                authGate.classList.remove('hidden');
+                emailForm.style.display = 'none';
+                pendingMsg.style.display = 'block';
+                statusEl.innerHTML = `⏳ Esperando aprobación: <strong>${user.email || user.displayName}</strong>`;
+                statusEl.className = 'auth-status offline';
+                btnAdmin.style.display = 'none';
+                events = [];
+                if (unsubscribe) { unsubscribe(); unsubscribe = null; }
+                renderCalendar();
+                renderEvents();
+                updateStats();
+                return;
+            }
+
+            // === ESTADO: REJECTED ===
+            if (currentUserData.status === 'rejected') {
+                alert('Tu solicitud de acceso fue rechazada por el administrador.');
+                await signOut(auth);
+                return;
+            }
+
+            // === ESTADO: APPROVED ===
+            authGate.classList.add('hidden');
+            emailForm.style.display = 'block';
+            pendingMsg.style.display = 'none';
+            statusEl.innerHTML = `🟢 Conectado: <strong>${user.displayName || user.email}</strong>`;
+            statusEl.className = 'auth-status connected';
+
+            // Mostrar botón admin solo si es admin
+            if (currentUserData.role === 'admin') {
+                btnAdmin.style.display = 'inline-block';
+            } else {
+                btnAdmin.style.display = 'none';
+            }
+
+            loadEventsFromFirestore();
         });
 
-        // ─── FIRESTORE ───
+        // ─── FIRESTORE EVENTOS ───
         function loadEventsFromFirestore() {
             if (!currentUser) return;
             if (unsubscribe) unsubscribe();
@@ -708,7 +831,7 @@
 
         async function addEvent() {
             if (!currentUser) {
-                alert('Primero inicia sesión con correo y contraseña o Google para guardar eventos.');
+                alert('Primero inicia sesión.');
                 return;
             }
 
@@ -779,6 +902,84 @@
                 }
             }
         }
+
+        // ─── PANEL DE ADMINISTRACIÓN ───
+        window.openAdminPanel = async () => {
+            if (!currentUserData || currentUserData.role !== 'admin') {
+                alert('No tienes permisos de administrador.');
+                return;
+            }
+
+            document.getElementById('adminModal').classList.add('active');
+            const list = document.getElementById('adminUsersList');
+            list.innerHTML = '<div class="empty-state">Cargando usuarios...</div>';
+
+            try {
+                const q = query(collection(db, 'users'), where('status', '==', 'pending'));
+                const snap = await getDocs(q);
+
+                if (snap.empty) {
+                    list.innerHTML = `
+                        <div class="empty-state">
+                            <p style="font-size: 2em; margin-bottom: 8px;">✅</p>
+                            <p>No hay usuarios pendientes de aprobación</p>
+                        </div>
+                    `;
+                    return;
+                }
+
+                list.innerHTML = '';
+                snap.forEach(docSnap => {
+                    const data = docSnap.data();
+                    const uid = docSnap.id;
+
+                    const card = document.createElement('div');
+                    card.className = 'admin-user-card';
+                    card.innerHTML = `
+                        <div class="admin-user-info">
+                            <strong>${data.displayName || 'Sin nombre'}</strong><br>
+                            <span style="color:#aaa; font-size:0.9em;">${data.email || 'Sin correo'}</span><br>
+                            <span class="badge pending">PENDIENTE</span>
+                        </div>
+                        <div class="admin-user-actions">
+                            <button class="btn-small btn-success" onclick="approveUser('${uid}')">✅ Aprobar</button>
+                            <button class="btn-small btn-logout" onclick="rejectUser('${uid}')">❌ Rechazar</button>
+                        </div>
+                    `;
+                    list.appendChild(card);
+                });
+            } catch (e) {
+                list.innerHTML = `<div class="empty-state" style="color:#ff8b8b;">Error: ${e.message}</div>`;
+            }
+        };
+
+        window.approveUser = async (uid) => {
+            if (!confirm('¿Aprobar a este usuario?')) return;
+            try {
+                await updateDoc(doc(db, 'users', uid), { status: 'approved' });
+                alert('Usuario aprobado correctamente.');
+                openAdminPanel(); // refrescar lista
+            } catch (e) {
+                alert('Error al aprobar: ' + e.message);
+            }
+        };
+
+        window.rejectUser = async (uid) => {
+            if (!confirm('¿Rechazar a este usuario?')) return;
+            try {
+                await updateDoc(doc(db, 'users', uid), { status: 'rejected' });
+                alert('Usuario rechazado.');
+                openAdminPanel();
+            } catch (e) {
+                alert('Error al rechazar: ' + e.message);
+            }
+        };
+
+        window.closeAdminModal = (event) => {
+            if (!event || event.target === document.getElementById('adminModal')) {
+                document.getElementById('adminModal').classList.remove('active');
+            }
+        };
 
         // ─── UI FUNCTIONS ───
         window.selectCategory = (cat) => {
@@ -1009,8 +1210,11 @@
         setInterval(checkAlerts, 60000);
 
         document.addEventListener('keydown', (e) => {
-            if (e.key === 'Escape') closeModal();
-            if (e.key === 'Escape') closeReminder();
+            if (e.key === 'Escape') {
+                closeModal();
+                closeReminder();
+                closeAdminModal();
+            }
         });
     </script>
 </body>
