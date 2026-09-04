@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Mi Agenda Nilton 2026</title>
+    <title>Mi Agenda Personal 2026</title>
     
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -381,6 +381,11 @@
         .day-detail-events { margin-top: 10px; }
         .day-event-item { padding: 10px; background: rgba(255,255,255,0.05); border-radius: 10px; margin-bottom: 8px; border-left: 3px solid; }
 
+        .reminder-modal { border-top: 4px solid #ff6b6b; box-shadow: 0 20px 70px rgba(255,107,107,0.25); }
+        .reminder-modal h2 { color: #ff8b8b; }
+        .reminder-actions { display: flex; justify-content: flex-end; margin-top: 20px; }
+        .reminder-actions .btn { width: auto; min-width: 140px; margin-top: 0; }
+
         .time-input { display: flex; gap: 8px; }
         .time-input input { flex: 1; }
 
@@ -423,7 +428,7 @@
     </div>
 
     <div class="container">
-        <h1>📅 Mi Agenda Nilton 2026</h1>
+        <h1>📅 Mi Agenda Personal 2026</h1>
         <p class="subtitle">Agosto - Diciembre 2026 | Sincronizado en la nube ☁️</p>
 
         <!-- Auth Bar -->
@@ -534,6 +539,18 @@
         </div>
     </div>
 
+    <!-- Aviso emergente de recordatorios -->
+    <div class="modal-overlay" id="reminderModal" onclick="closeReminder(event)">
+        <div class="modal reminder-modal" onclick="event.stopPropagation()">
+            <button class="close-modal" onclick="closeReminder()" aria-label="Cerrar aviso">×</button>
+            <h2>⚠️ Recordatorio próximo</h2>
+            <div class="day-detail-events" id="reminderContent"></div>
+            <div class="reminder-actions">
+                <button class="btn btn-primary" type="button" onclick="closeReminder()">Entendido</button>
+            </div>
+        </div>
+    </div>
+
     <script type="module">
         // ═══════════════════════════════════════════════════════
         // FIREBASE SDK - CONFIGURACIÓN REAL DE TU PROYECTO
@@ -574,6 +591,7 @@
         let selectedCategory = 'trabajo';
         let currentFilter = 'all';
         let isRegisterMode = false;
+        let lastReminderSignature = '';
 
         const monthNames = ['Enero','Febrero','Marzo','Abril','Mayo','Junio',
                            'Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
@@ -869,6 +887,12 @@
             }
         };
 
+        window.closeReminder = (event) => {
+            if (!event || event.target === document.getElementById('reminderModal')) {
+                document.getElementById('reminderModal').classList.remove('active');
+            }
+        };
+
         window.changeMonth = (delta) => {
             currentMonth += delta;
             if (currentMonth > 11) { currentMonth = 0; currentYear++; }
@@ -950,8 +974,24 @@
                         (${e.category === 'compras' ? '¡Viaje a Lima!' : e.category === 'trabajo' ? '¡Trabajo!' : '¡Instituto!'})
                     </div>
                 `).join('');
+
+                const reminderSignature = alerts.map(e => e.id).sort().join('|');
+                if (reminderSignature !== lastReminderSignature) {
+                    const reminderContent = document.getElementById('reminderContent');
+                    reminderContent.innerHTML = alerts.map(e => `
+                        <div class="day-event-item" style="border-left-color: ${categoryColors[e.category]}">
+                            <strong>${categoryEmojis[e.category]} ${e.title}</strong>
+                            <div style="color: #aaa; font-size: 0.9em; margin-top: 5px;">
+                                📅 ${formatDisplayDate(e.date)} a las ${e.time}
+                            </div>
+                        </div>
+                    `).join('');
+                    document.getElementById('reminderModal').classList.add('active');
+                    lastReminderSignature = reminderSignature;
+                }
             } else {
                 banner.classList.remove('active');
+                lastReminderSignature = '';
             }
         }
 
@@ -970,6 +1010,7 @@
 
         document.addEventListener('keydown', (e) => {
             if (e.key === 'Escape') closeModal();
+            if (e.key === 'Escape') closeReminder();
         });
     </script>
 </body>
