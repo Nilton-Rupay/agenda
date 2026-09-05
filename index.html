@@ -646,8 +646,9 @@
         let currentUser = null;
         let currentUserData = null;   // datos del documento users/{uid}
         let unsubscribe = null;
-        let currentMonth = 7;
-        let currentYear = 2026;
+        const today = new Date();
+        let currentMonth = today.getMonth();
+        let currentYear = today.getFullYear();
         let selectedCategory = 'trabajo';
         let currentFilter = 'all';
         let isRegisterMode = false;
@@ -676,6 +677,7 @@
                 } else {
                     await signInWithEmailAndPassword(auth, email, password);
                 }
+                document.getElementById('emailAuthForm').reset();
                 document.getElementById('authError').textContent = '';
             } catch (e) {
                 const messages = {
@@ -735,6 +737,7 @@
                 currentUser = null;
                 currentUserData = null;
                 authGate.classList.remove('hidden');
+                emailForm.reset();
                 emailForm.style.display = 'block';
                 pendingMsg.style.display = 'none';
                 statusEl.innerHTML = `🟡 No conectado. Elige un método de acceso.`;
@@ -804,6 +807,10 @@
                 btnAdmin.style.display = 'none';
             }
 
+            const currentDate = new Date();
+            currentMonth = currentDate.getMonth();
+            currentYear = currentDate.getFullYear();
+            renderCalendar();
             loadEventsFromFirestore();
         });
 
